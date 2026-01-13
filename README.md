@@ -2,24 +2,6 @@
 
 A C++ project for solving and manipulating LaTeX mathematical expressions.
 
-## Project Structure
-
-```
-src/
-├── main.cpp              # Entry point
-├── cli/                  # Command-line interface
-├── core/                 # Core solving logic
-│   ├── ast/              # Abstract syntax tree definitions
-│   ├── common/           # Common utilities
-│   ├── rewrite/          # Expression rewriting rules
-│   └── solver/           # Mathematical solvers
-└── latex/                # LaTeX parsing and emission
-    ├── lexer/            # LaTeX tokenization
-    ├── parser/           # LaTeX parsing
-    ├── lowering/         # AST conversion
-    └── emitter/          # AST to LaTeX conversion
-```
-
 ## Build Instructions
 
 ### Prerequisites
@@ -43,12 +25,6 @@ src/
    ```bash
    ./build/bin/latex-solver
    ```
-
-### VS Code Integration
-
-- **Build Task:** Ctrl+Shift+B or Terminal → Run Build Task
-- **Run:** Use the "CMake: Run" task
-- **Debug:** F5 to start debugging with GDB
 
 ### Compiler Flags
 - `-Wall -Wextra`: Enable warnings
