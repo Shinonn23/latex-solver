@@ -1,12 +1,15 @@
 #include "core/ast/binary.h"
+#include "core/ast/equation.h"
 #include "core/ast/expr.h"
 #include "core/ast/number.h"
 #include "core/common/context.h"
 #include "core/common/evaluator.h"
 #include "core/common/parser.h"
 #include "core/rewrite/simplify.h"
+#include "core/solver/algebra/linear_solver.h"
 #include <iostream>
 #include <memory>
+#include <set>
 #include <string>
 
 using namespace std;
@@ -15,20 +18,14 @@ using namespace latex_solver;
 void print_help() {
 	cout << "\n=== LaTeX Solver - Basic Calculator ===\n";
 	cout << "Commands:\n";
-	cout << "  <expression>       - Evaluate expression (e.g., 2 + 3 * 4)\n";
+	cout << "  <expression>       - Evaluate expression\n";
 	cout << "  simplify <expr>    - Simplify expression\n";
-	cout << "  set <var> <value>  - Set variable value (e.g., set x 5)\n";
+	cout << "  solve <equation>   - Solve equation\n";
+	cout << "  set <var> <value>  - Set variable value\n";
 	cout << "  vars               - Show all variables\n";
 	cout << "  clear              - Clear all variables\n";
 	cout << "  help               - Show this help\n";
 	cout << "  exit               - Exit program\n";
-	cout << "\nSupported operations: + - * /\n";
-	cout << "Examples:\n";
-	cout << "  > 2 + 3\n";
-	cout << "  > 10 * (5 + 3)\n";
-	cout << "  > set x 10\n";
-	cout << "  > x * 2 + 5\n";
-	cout << "  > simplify x + 0\n\n";
 }
 
 void handle_set_command(const string &input, Context &ctx) {
@@ -76,6 +73,28 @@ void handle_simplify_command(const string &input) {
 
 		auto simplified = Simplifier::simplify(*expr);
 		cout << "Simplified: " << simplified->to_string() << endl;
+	} catch (const exception &e) {
+		cout << "Error: " << e.what() << endl;
+	}
+}
+
+void handle_solve_command(const string &input, Context &ctx) {
+	// Parse: solve <equation>
+	size_t pos = 5; // skip "solve"
+	while (pos < input.size() && isspace(input[pos]))
+		pos++;
+
+	string equation_str = input.substr(pos);
+
+	try {
+		Parser parser(equation_str);
+		auto equation = parser.parse_equation();
+
+		cout << "Equation: " << equation->to_string() << endl;
+
+		// Solve will auto-detect the variable
+		double solution = LinearSolver::solve(*equation, ctx);
+		cout << "Solution: " << solution << endl;
 	} catch (const exception &e) {
 		cout << "Error: " << e.what() << endl;
 	}
@@ -147,6 +166,9 @@ int main() {
 		} else if (input.substr(0, 8) == "simplify" &&
 				   (input.size() == 8 || isspace(input[8]))) {
 			handle_simplify_command(input);
+		} else if (input.substr(0, 5) == "solve" &&
+				   (input.size() == 5 || isspace(input[5]))) {
+			handle_solve_command(input, ctx);
 		} else {
 			handle_expression(input, ctx);
 		}

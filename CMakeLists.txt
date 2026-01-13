@@ -17,15 +17,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Source files - organize by components
-set(CLI_SOURCES
-    src/cli/derive.cpp
-    src/cli/integrate.cpp
-    src/cli/repl.cpp
-    src/cli/simplify.cpp
-    src/cli/solve.cpp
-)
-
 set(CORE_SOURCES
     # AST modules would go here
     # Common modules would go here
@@ -40,7 +31,6 @@ set(LATEX_SOURCES
 # Main executable
 add_executable(latex-solver
     src/main.cpp
-    ${CLI_SOURCES}
     ${CORE_SOURCES}
     ${LATEX_SOURCES}
 )
@@ -57,4 +47,13 @@ target_include_directories(latex-solver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 enable_testing()
 
 # Optional: Add tests
-# add_subdirectory(src/tests)
+add_subdirectory(src/tests)
+
+# Add custom target to run tests automatically after build
+# Use EXCLUDE_FROM_ALL to avoid dependency issues, then manually add dependencies
+add_custom_command(
+    TARGET latex-solver POST_BUILD
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running tests after build..."
+)

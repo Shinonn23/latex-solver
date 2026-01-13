@@ -2,7 +2,9 @@
 #define PARSER_H
 
 #include "../../core/ast/binary.h"
+#include "../../core/ast/equation.h"
 #include "../../core/ast/expr.h"
+#include "../../core/ast/function.h"
 #include "../../core/ast/number.h"
 #include "../../core/ast/symbol.h"
 #include "../../core/common/error.h"
@@ -111,6 +113,7 @@ class Parser {
 	 * - Numbers: "42", "3.14"
 	 * - Variables: "x", "var_name"
 	 * - Parenthesized expressions: "(2 + 3)"
+	 * - Unary minus: "-5", "-(x + 2)"
 	 *
 	 * Example: "(x + 5)" will recursively parse the expression inside
 	 * parentheses
@@ -120,6 +123,33 @@ class Parser {
 	 */
 	ExprPtr parse_primary() {
 		skip_whitespace();
+
+		// Handle unary minus
+		if (current() == '-') {
+			advance(); // consume '-'
+			auto expr = parse_primary();
+			// Create: 0 - expr or -1 * expr
+			return std::make_unique<BinaryOp>(std::make_unique<Number>(0),
+											  std::move(expr),
+											  BinaryOpType::SUB);
+		}
+
+		// Handle \sqrt{...}
+		if (starts_with("\\sqrt")) {
+			pos_ += 5; // consume "\sqrt"
+			skip_whitespace();
+			if (current() != '{') {
+				throw ParseError("Expected '{' after \\sqrt");
+			}
+			advance(); // consume '{'
+			auto expr = parse_expression();
+			skip_whitespace();
+			if (current() != '}') {
+				throw ParseError("Expected '}' after \\sqrt argument");
+			}
+			advance(); // consume '}'
+			return std::make_unique<Function>("sqrt", std::move(expr));
+		}
 
 		// Handle parenthesized expressions
 		if (current() == '(') {
@@ -147,7 +177,16 @@ class Parser {
 	}
 
 	/**
-	 * Parses multiplicative expressions (*, /).
+	 * Checks if the input starts with a specific string at current position.
+	 */
+	bool starts_with(const std::string &str) const {
+		if (pos_ + str.length() > input_.size())
+			return false;
+		return input_.substr(pos_, str.length()) == str;
+	}
+
+	/**
+	 * Parses multiplicative expressions (*, /, \times, \div).
 	 * Left-associative: "a * b * c" is parsed as "(a * b) * c"
 	 * Higher precedence than addition/subtraction.
 	 *
@@ -161,13 +200,31 @@ class Parser {
 
 		while (true) {
 			skip_whitespace();
-			char op = current();
 
-			if (op == '*' || op == '/') {
+			BinaryOpType op_type;
+			bool found_op = false;
+
+			// Check for LaTeX operators first
+			if (starts_with("\\times")) {
+				pos_ += 6; // length of "\times"
+				op_type = BinaryOpType::MUL;
+				found_op = true;
+			} else if (starts_with("\\div")) {
+				pos_ += 4; // length of "\div"
+				op_type = BinaryOpType::DIV;
+				found_op = true;
+			} else if (current() == '*') {
 				advance();
+				op_type = BinaryOpType::MUL;
+				found_op = true;
+			} else if (current() == '/') {
+				advance();
+				op_type = BinaryOpType::DIV;
+				found_op = true;
+			}
+
+			if (found_op) {
 				auto right = parse_primary();
-				BinaryOpType op_type =
-					(op == '*') ? BinaryOpType::MUL : BinaryOpType::DIV;
 				left = std::make_unique<BinaryOp>(std::move(left),
 												  std::move(right), op_type);
 			} else {
@@ -184,14 +241,14 @@ class Parser {
 	 * Lower precedence than multiplication/division.
 	 *
 	 * Example: "2 + 3 * 4" -> BinaryOp(
-     *                             Number(2), 
-     *                             BinaryOp(
-     *                                 Number(3),
+	 *                             Number(2),
+	 *                             BinaryOp(
+	 *                                 Number(3),
 	 *                                 Number(4),
-     *                                 MUL
-     *                             ),
-     *                             ADD
-     *                         )
+	 *                                 MUL
+	 *                             ),
+	 *                             ADD
+	 *                         )
 	 *
 	 * @return A unique pointer to the parsed expression
 	 */
@@ -252,6 +309,36 @@ class Parser {
 			throw ParseError("Unexpected characters after expression");
 		}
 		return expr;
+	}
+
+	/**
+	 * Parses the input string into an equation.
+	 * Expects format: <expression> = <expression>
+	 *
+	 * Example usage:
+	 *   Parser p("x + 5 = 10");
+	 *   EquationPtr eq = p.parse_equation();
+	 *
+	 * @return A unique pointer to the parsed equation
+	 * @throws ParseError if the input is invalid or doesn't contain '='
+	 */
+	EquationPtr parse_equation() {
+		auto left = parse_expression();
+		skip_whitespace();
+
+		if (current() != '=') {
+			throw ParseError("Expected '=' in equation");
+		}
+		advance(); // consume '='
+
+		auto right = parse_expression();
+		skip_whitespace();
+
+		if (current() != '\0') {
+			throw ParseError("Unexpected characters after equation");
+		}
+
+		return std::make_unique<Equation>(std::move(left), std::move(right));
 	}
 };
 
