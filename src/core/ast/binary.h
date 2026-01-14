@@ -92,4 +92,4 @@ namespace latex_solver
 
 } // namespace latex_solver
 
-#endif // BINARY_H
+#endif

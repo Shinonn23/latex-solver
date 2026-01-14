@@ -53,7 +53,7 @@ void test_simplify_sub_zero() {
 
 void test_simplify_mul_zero() {
 	TEST("Simplify x * 0 = 0");
-	Parser p("x * 0");
+	Parser p("x \\times 0");
 	auto expr = p.parse();
 	auto simplified = Simplifier::simplify(*expr);
 	ASSERT_STR_EQ(simplified->to_string(), "0");
@@ -62,7 +62,7 @@ void test_simplify_mul_zero() {
 
 void test_simplify_mul_one() {
 	TEST("Simplify x * 1 = x");
-	Parser p("x * 1");
+	Parser p("x \\times 1");
 	auto expr = p.parse();
 	auto simplified = Simplifier::simplify(*expr);
 	ASSERT_STR_EQ(simplified->to_string(), "x");
@@ -71,7 +71,7 @@ void test_simplify_mul_one() {
 
 void test_simplify_one_mul() {
 	TEST("Simplify 1 * x = x");
-	Parser p("1 * x");
+	Parser p("1 \\times x");
 	auto expr = p.parse();
 	auto simplified = Simplifier::simplify(*expr);
 	ASSERT_STR_EQ(simplified->to_string(), "x");
@@ -80,7 +80,7 @@ void test_simplify_one_mul() {
 
 void test_simplify_div_one() {
 	TEST("Simplify x / 1 = x");
-	Parser p("x / 1");
+	Parser p("x \\div 1");
 	auto expr = p.parse();
 	auto simplified = Simplifier::simplify(*expr);
 	ASSERT_STR_EQ(simplified->to_string(), "x");

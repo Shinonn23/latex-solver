@@ -18,7 +18,7 @@ int passed_count = 0;
 
 void test_division_by_zero() {
 	TEST("Division by zero error handling");
-	Parser p("5 / 0");
+	Parser p("5 \\div 0");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);

@@ -36,15 +36,12 @@ class Evaluator : public ExprVisitor {
 	}
 
 	void visit(const BinaryOp &node) override {
-		// Evaluate left operand
 		node.left().accept(*this);
 		double left_val = result_;
 
-		// Evaluate right operand
 		node.right().accept(*this);
 		double right_val = result_;
 
-		// Perform operation
 		switch (node.op()) {
 		case BinaryOpType::ADD:
 			result_ = left_val + right_val;
@@ -65,11 +62,9 @@ class Evaluator : public ExprVisitor {
 	}
 
 	void visit(const Function &node) override {
-		// Evaluate the argument
 		node.argument().accept(*this);
 		double arg_val = result_;
 
-		// Apply the function
 		if (node.name() == "sqrt") {
 			if (arg_val < 0) {
 				throw std::runtime_error(
@@ -84,4 +79,4 @@ class Evaluator : public ExprVisitor {
 
 } // namespace latex_solver
 
-#endif // EVALUATOR_H
+#endif

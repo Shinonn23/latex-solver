@@ -7,8 +7,6 @@
 
 namespace latex_solver
 {
-
-    // Context for storing variable values
     class Context
     {
     private:
@@ -53,4 +51,4 @@ namespace latex_solver
 
 } // namespace latex_solver
 
-#endif // CONTEXT_H
+#endif

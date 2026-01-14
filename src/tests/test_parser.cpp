@@ -87,16 +87,16 @@ void test_parse_subtraction() {
 }
 
 void test_parse_multiplication() {
-	TEST("Parse multiplication: 3 * 4");
-	Parser p("3 * 4");
+	TEST("Parse multiplication: 3 \\times 4");
+	Parser p("3 \\times 4");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "(3 * 4)");
 	PASS();
 }
 
 void test_parse_division() {
-	TEST("Parse division: 8 / 2");
-	Parser p("8 / 2");
+	TEST("Parse division: 8 \\div 2");
+	Parser p("8 \\div 2");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "(8 / 2)");
 	PASS();
@@ -121,7 +121,7 @@ void test_parse_latex_div() {
 // ==================== Precedence Tests ====================
 
 void test_parse_precedence_mul_add() {
-	TEST("Parse precedence: 2 + 3 * 4");
+	TEST("Parse precedence: 2 + 3 \\times 4");
 	Parser p("2 + 3 \\times 4");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "(2 + (3 * 4))");
@@ -129,8 +129,8 @@ void test_parse_precedence_mul_add() {
 }
 
 void test_parse_precedence_add_mul() {
-	TEST("Parse precedence: 2 * 3 + 4");
-	Parser p("2 * 3 + 4");
+	TEST("Parse precedence: 2 \\times 3 + 4");
+	Parser p("2 \\times 3 + 4");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "((2 * 3) + 4)");
 	PASS();
@@ -145,8 +145,8 @@ void test_parse_associativity_left() {
 }
 
 void test_parse_complex_precedence() {
-	TEST("Parse complex precedence: 2 + 3 * 4 - 5 / 2");
-	Parser p("2 + 3 * 4 - 5 / 2");
+	TEST("Parse complex precedence: 2 + 3 \\times 4 - 5 \\div 2");
+	Parser p("2 + 3 \\times 4 - 5 \\div 2");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "((2 + (3 * 4)) - (5 / 2))");
 	PASS();
@@ -163,24 +163,24 @@ void test_parse_simple_parentheses() {
 }
 
 void test_parse_parentheses_precedence() {
-	TEST("Parse parentheses override precedence: (2 + 3) * 4");
-	Parser p("(2 + 3) * 4");
+	TEST("Parse parentheses override precedence: (2 + 3) \\times 4");
+	Parser p("(2 + 3) \\times 4");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "((2 + 3) * 4)");
 	PASS();
 }
 
 void test_parse_nested_parentheses() {
-	TEST("Parse nested parentheses: ((2 + 3) * 4)");
-	Parser p("((2 + 3) * 4)");
+	TEST("Parse nested parentheses: ((2 + 3) \\times 4)");
+	Parser p("((2 + 3) \\times 4)");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "((2 + 3) * 4)");
 	PASS();
 }
 
 void test_parse_multiple_parentheses() {
-	TEST("Parse multiple parentheses: (2 + 3) * (4 + 5)");
-	Parser p("(2 + 3) * (4 + 5)");
+	TEST("Parse multiple parentheses: (2 + 3) \\times (4 + 5)");
+	Parser p("(2 + 3) \\times (4 + 5)");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "((2 + 3) * (4 + 5))");
 	PASS();
@@ -255,8 +255,8 @@ void test_parse_sqrt_in_expression() {
 }
 
 void test_parse_sqrt_multiplication() {
-	TEST("Parse sqrt with multiplication: 2 * \\sqrt{25}");
-	Parser p("2 * \\sqrt{25}");
+	TEST("Parse sqrt with multiplication: 2 \\times \\sqrt{25}");
+	Parser p("2 \\times \\sqrt{25}");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "(2 * sqrt(25))");
 	PASS();
@@ -265,8 +265,8 @@ void test_parse_sqrt_multiplication() {
 // ==================== Whitespace Tests ====================
 
 void test_parse_no_whitespace() {
-	TEST("Parse without whitespace: 2+3*4");
-	Parser p("2+3*4");
+	TEST("Parse without whitespace: 2+3\\times4");
+	Parser p("2+3\\times4");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "(2 + (3 * 4))");
 	PASS();
@@ -274,7 +274,7 @@ void test_parse_no_whitespace() {
 
 void test_parse_extra_whitespace() {
 	TEST("Parse with extra whitespace:   2  +  3  *  4  ");
-	Parser p("  2  +  3  *  4  ");
+	Parser p("  2  +  3  \\times  4  ");
 	auto expr = p.parse();
 	ASSERT_STR_EQ(expr->to_string(), "(2 + (3 * 4))");
 	PASS();
@@ -299,8 +299,8 @@ void test_parse_equation_with_operations() {
 }
 
 void test_parse_complex_equation() {
-	TEST("Parse complex equation: 2 * x - 3 = 7");
-	Parser p("2 * x - 3 = 7");
+	TEST("Parse complex equation: 2 \\times x - 3 = 7");
+	Parser p("2 \\times x - 3 = 7");
 	auto eq = p.parse_equation();
 	ASSERT_STR_EQ(eq->to_string(), "((2 * x) - 3) = 7");
 	PASS();

@@ -35,4 +35,4 @@ class Number : public Expr {
 
 } // namespace latex_solver
 
-#endif // NUMBER_H
+#endif

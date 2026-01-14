@@ -41,7 +41,7 @@ void test_single_variable() {
 
 void test_variable_in_expression() {
 	TEST("Variable in expression: x * 2 + 5 with x=10");
-	Parser p("x * 2 + 5");
+	Parser p("x \\times 2 + 5");
 	auto expr = p.parse();
 	Context ctx;
 	ctx.set("x", 10.0);

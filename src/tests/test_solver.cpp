@@ -38,7 +38,7 @@ void test_solve_simple() {
 
 void test_solve_multiplication() {
 	TEST("Solve with multiplication: 2 * x = 10");
-	Parser p("2 * x = 10");
+	Parser p("2 \\times x = 10");
 	auto eq = p.parse_equation();
 	Context ctx;
 	double solution = LinearSolver::solve(*eq, ctx);
@@ -48,7 +48,7 @@ void test_solve_multiplication() {
 
 void test_solve_complex() {
 	TEST("Solve complex equation: 2 * x - 3 = 7");
-	Parser p("2 * x - 3 = 7");
+	Parser p("2 \\times x - 3 = 7");
 	auto eq = p.parse_equation();
 	Context ctx;
 	double solution = LinearSolver::solve(*eq, ctx);
@@ -68,7 +68,7 @@ void test_solve_reversed() {
 
 void test_solve_with_division() {
 	TEST("Solve with division: x / 2 = 5");
-	Parser p("x / 2 = 5");
+	Parser p("x \\div 2 = 5");
 	auto eq = p.parse_equation();
 	Context ctx;
 	double solution = LinearSolver::solve(*eq, ctx);

@@ -22,7 +22,6 @@ class ExprVisitor {
 	virtual void visit(const Function &node) = 0;
 };
 
-// Base expression class
 class Expr {
   public:
 	virtual ~Expr() = default;
@@ -41,4 +40,4 @@ using ExprPtr = std::unique_ptr<Expr>;
 
 } // namespace latex_solver
 
-#endif // EXPR_H
+#endif

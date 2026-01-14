@@ -37,4 +37,4 @@ class SolverError : public std::runtime_error {
 
 } // namespace latex_solver
 
-#endif // ERROR_H
+#endif

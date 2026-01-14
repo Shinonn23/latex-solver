@@ -7,11 +7,6 @@
 #include <string>
 
 namespace latex_solver {
-
-/**
- * Represents a function call expression.
- * Examples: sqrt(x), sin(x), cos(x)
- */
 class Function : public Expr {
   private:
 	std::string name_; // Function name (e.g., "sqrt", "sin")
@@ -41,4 +36,4 @@ class Function : public Expr {
 
 } // namespace latex_solver
 
-#endif // FUNCTION_H
+#endif

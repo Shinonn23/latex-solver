@@ -35,4 +35,4 @@ namespace latex_solver
 
 } // namespace latex_solver
 
-#endif // SYMBOL_H
+#endif

@@ -54,8 +54,8 @@ void test_sqrt_in_expression() {
 }
 
 void test_sqrt_nested() {
-	std::cout << "Test: Evaluating 2 * \\sqrt{25}..." << std::endl;
-	Parser p("2 * \\sqrt{25}");
+	std::cout << "Test: Evaluating 2 \\times \\sqrt{25}..." << std::endl;
+	Parser p("2 \\times \\sqrt{25}");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
