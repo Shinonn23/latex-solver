@@ -132,6 +132,14 @@ class Parser {
 				pos_ += 4; // length of "\div"
 				op_type = BinaryOpType::DIV;
 				found_op = true;
+			} else if (current() == '*') {
+				advance();
+				op_type = BinaryOpType::MUL;
+				found_op = true;
+			} else if (current() == '/') {
+				advance();
+				op_type = BinaryOpType::DIV;
+				found_op = true;
 			}
 
 			if (found_op) {

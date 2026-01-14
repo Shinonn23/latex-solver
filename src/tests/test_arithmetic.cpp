@@ -49,8 +49,8 @@ void test_subtraction() {
 }
 
 void test_multiplication() {
-	TEST("Basic multiplication: 4 \\times 5");
-	Parser p("4 \\times 5");
+	TEST("Basic multiplication: 4 * 5");
+	Parser p("4 * 5");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
@@ -60,8 +60,8 @@ void test_multiplication() {
 }
 
 void test_division() {
-	TEST("Basic division: 15 \\div 3");
-	Parser p("15 \\div 3");
+	TEST("Basic division: 15 / 3");
+	Parser p("15 / 3");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
@@ -71,8 +71,8 @@ void test_division() {
 }
 
 void test_operator_precedence() {
-	TEST("Operator precedence: 2 + 3 \\times 4");
-	Parser p("2 + 3 \\times 4");
+	TEST("Operator precedence: 2 + 3 * 4");
+	Parser p("2 + 3 * 4");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
@@ -82,8 +82,8 @@ void test_operator_precedence() {
 }
 
 void test_parentheses() {
-	TEST("Parentheses: (2 + 3) \\times 4");
-	Parser p("(2 + 3) \\times 4");
+	TEST("Parentheses: (2 + 3) * 4");
+	Parser p("(2 + 3) * 4");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
@@ -93,8 +93,8 @@ void test_parentheses() {
 }
 
 void test_nested_parentheses() {
-	TEST("Nested parentheses: ((2 + 3) \\times 4) \\div 5");
-	Parser p("((2 + 3) \\times 4) \\div 5");
+	TEST("Nested parentheses: ((2 + 3) * 4) / 5");
+	Parser p("((2 + 3) * 4) / 5");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
@@ -115,8 +115,8 @@ void test_unary_minus() {
 }
 
 void test_unary_minus_expression() {
-	TEST("Unary minus in expression: 5 \\times -5");
-	Parser p("5 \\times -5");
+	TEST("Unary minus in expression: 5 * -5");
+	Parser p("5 * -5");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
@@ -126,8 +126,8 @@ void test_unary_minus_expression() {
 }
 
 void test_complex_expression() {
-	TEST("Complex expression: 10 \\times (5 + 3)");
-	Parser p("10 \\times (5 + 3)");
+	TEST("Complex expression: 10 * (5 + 3)");
+	Parser p("10 * (5 + 3)");
 	auto expr = p.parse();
 	Context ctx;
 	Evaluator eval(ctx);
