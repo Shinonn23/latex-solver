@@ -4,31 +4,24 @@
 #include "expr.h"
 #include <string>
 
-namespace latex_solver
-{
+namespace latex_solver {
 
-    class Symbol : public Expr
-    {
-    private:
+    class Symbol : public Expr {
+        private:
         std::string name_;
 
-    public:
+        public:
         explicit Symbol(const std::string &name) : name_(name) {}
 
         const std::string &name() const { return name_; }
 
-        void accept(ExprVisitor &visitor) const override
-        {
+        void               accept(ExprVisitor &visitor) const override {
             visitor.visit(*this);
         }
 
-        std::string to_string() const override
-        {
-            return name_;
-        }
+        std::string           to_string() const override { return name_; }
 
-        std::unique_ptr<Expr> clone() const override
-        {
+        std::unique_ptr<Expr> clone() const override {
             return std::make_unique<Symbol>(name_);
         }
     };

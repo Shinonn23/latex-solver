@@ -3,51 +3,44 @@
 
 #include "expr.h"
 #include <memory>
-#include <string>
 #include <stdexcept>
+#include <string>
 
-namespace latex_solver
-{
+namespace latex_solver {
 
-    enum class BinaryOpType
-    {
+    enum class BinaryOpType {
         ADD, // +
         SUB, // -
         MUL, // *
         DIV  // /
     };
 
-    class BinaryOp : public Expr
-    {
-    private:
-        ExprPtr left_;
-        ExprPtr right_;
+    class BinaryOp : public Expr {
+        private:
+        ExprPtr      left_;
+        ExprPtr      right_;
         BinaryOpType op_;
 
-    public:
+        public:
         BinaryOp(ExprPtr left, ExprPtr right, BinaryOpType op)
-            : left_(std::move(left)), right_(std::move(right)), op_(op)
-        {
-            if (!left_ || !right_)
-            {
-                throw std::invalid_argument("BinaryOp: operands cannot be null");
+            : left_(std::move(left)), right_(std::move(right)), op_(op) {
+            if (!left_ || !right_) {
+                throw std::invalid_argument(
+                    "BinaryOp: operands cannot be null");
             }
         }
 
-        const Expr &left() const { return *left_; }
-        const Expr &right() const { return *right_; }
+        const Expr  &left() const { return *left_; }
+        const Expr  &right() const { return *right_; }
         BinaryOpType op() const { return op_; }
 
-        void accept(ExprVisitor &visitor) const override
-        {
+        void         accept(ExprVisitor &visitor) const override {
             visitor.visit(*this);
         }
 
-        std::string to_string() const override
-        {
+        std::string to_string() const override {
             std::string op_str;
-            switch (op_)
-            {
+            switch (op_) {
             case BinaryOpType::ADD:
                 op_str = "+";
                 break;
@@ -61,21 +54,17 @@ namespace latex_solver
                 op_str = "/";
                 break;
             }
-            return "(" + left_->to_string() + " " + op_str + " " + right_->to_string() + ")";
+            return "(" + left_->to_string() + " " + op_str + " " +
+                   right_->to_string() + ")";
         }
 
-        std::unique_ptr<Expr> clone() const override
-        {
-            return std::make_unique<BinaryOp>(
-                left_->clone(),
-                right_->clone(),
-                op_);
+        std::unique_ptr<Expr> clone() const override {
+            return std::make_unique<BinaryOp>(left_->clone(), right_->clone(),
+                                              op_);
         }
 
-        static std::string op_to_string(BinaryOpType op)
-        {
-            switch (op)
-            {
+        static std::string op_to_string(BinaryOpType op) {
+            switch (op) {
             case BinaryOpType::ADD:
                 return "+";
             case BinaryOpType::SUB:
