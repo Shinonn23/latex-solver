@@ -1,6 +1,6 @@
 #include "../core/common/context.h"
-#include "../core/common/evaluator.h"
-#include "../core/common/parser.h"
+#include "../core/eval/evaluator.h"
+#include "../core/parser/parser.h"
 #include <cassert>
 #include <cmath>
 #include <iostream>

@@ -1,6 +1,9 @@
 #ifndef LEXER_H
 #define LEXER_H
+
+#include "../common/error.h"
 #include "token.h"
+
 
 namespace latex_solver {
     class Lexer {
@@ -54,7 +57,7 @@ namespace latex_solver {
             if (current() == '\\') {
                 advance(); // consume the backslash
                 std::string func_;
-                while (std::isalnum(current()) || current() == '_') {
+                while (std::isalpha(current()) || current() == '_') {
                     func_ += current();
                     advance();
                 }

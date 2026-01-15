@@ -1,6 +1,6 @@
 #include "../core/ast/equation.h"
 #include "../core/common/context.h"
-#include "../core/common/parser.h"
+#include "../core/parser/parser.h"
 #include "../core/solver/algebra/linear_solver.h"
 #include <cassert>
 #include <cmath>

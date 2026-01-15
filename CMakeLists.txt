@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # =====================
-# Compiler flags
+# Compiler warnings
 # =====================
 if(MSVC)
     add_compile_options(/W4)
@@ -24,22 +24,29 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # =====================
-# Sources
+# Core library
 # =====================
-set(CORE_SOURCES)
-set(LATEX_SOURCES)
+add_library(latex_core
+    src/core/eval/evaluator.cpp
+    src/core/parser/parser.cpp
+    src/core/solver/algebra/linear_solver.cpp
+    src/core/solver/algebra/quadratic_solver.cpp
+    src/core/rewrite/passes/simplify.cpp
+)
+
+target_include_directories(latex_core
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
 # =====================
 # Main executable
 # =====================
 add_executable(latex-solver
     src/main.cpp
-    ${CORE_SOURCES}
-    ${LATEX_SOURCES}
 )
 
-target_include_directories(latex-solver
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+target_link_libraries(latex-solver
+    PRIVATE latex_core
 )
 
 # =====================
@@ -47,12 +54,3 @@ target_include_directories(latex-solver
 # =====================
 enable_testing()
 add_subdirectory(src/tests)
-
-# =====================
-# Custom target to run tests
-# =====================
-add_custom_target(run-tests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "Running tests..."
-)

@@ -1,9 +1,9 @@
 #include "../core/ast/function.h"
 #include "../core/ast/number.h"
 #include "../core/common/context.h"
-#include "../core/common/evaluator.h"
-#include "../core/common/parser.h"
-#include "../core/rewrite/simplify.h"
+#include "../core/eval/evaluator.h"
+#include "../core/parser/parser.h"
+#include "../core/rewrite/passes/simplify.h"
 #include <cassert>
 #include <cmath>
 #include <iostream>

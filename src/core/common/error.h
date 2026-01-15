@@ -1,7 +1,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include "../../latex/lexer/token.h"
+#include "../lexer/token.h"
 #include <stdexcept>
 #include <string>
 

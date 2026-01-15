@@ -1,6 +1,6 @@
 #include "../core/ast/symbol.h"
-#include "../core/common/parser.h"
-#include "../core/rewrite/simplify.h"
+#include "../core/parser/parser.h"
+#include "../core/rewrite/passes/simplify.h"
 #include <cassert>
 #include <iostream>
 

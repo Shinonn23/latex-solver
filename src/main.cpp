@@ -1,10 +1,11 @@
 #include "core/ast/equation.h"
 #include "core/ast/expr.h"
 #include "core/common/context.h"
-#include "core/common/evaluator.h"
-#include "core/common/parser.h"
-#include "core/rewrite/simplify.h"
+#include "core/eval/evaluator.h"
+#include "core/parser/parser.h"
+#include "core/rewrite/passes/simplify.h"
 #include "core/solver/algebra/linear_solver.h"
+#include "core/solver/algebra/quadratic_solver.h"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -89,9 +90,26 @@ void handle_solve_command(const string &input, Context &ctx) {
 
         cout << "Equation: " << equation->to_string() << endl;
 
-        // Solve will auto-detect the variable
-        double solution = LinearSolver::solve(*equation, ctx);
-        cout << "Solution: " << solution << endl;
+        // Try quadratic solver first
+        try {
+            auto solutions = QuadraticSolver::solve(*equation, ctx);
+            if (solutions.size() == 1) {
+                cout << "Solution: " << solutions[0] << endl;
+            } else if (solutions.size() == 2) {
+                cout << "Solutions: " << solutions[0] << ", " << solutions[1]
+                     << endl;
+            }
+        } catch (const exception &e) {
+            string error_msg = e.what();
+            // If not quadratic, try linear solver
+            if (error_msg.find("Not a quadratic equation") != string::npos) {
+                double solution = LinearSolver::solve(*equation, ctx);
+                cout << "Solution: " << solution << endl;
+            } else {
+                // Re-throw other errors
+                throw;
+            }
+        }
     } catch (const exception &e) {
         cout << e.what() << endl;
     }

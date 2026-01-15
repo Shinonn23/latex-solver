@@ -1,6 +1,6 @@
 #include "../core/common/error.h"
-#include "../core/common/evaluator.h"
-#include "../core/common/parser.h"
+#include "../core/eval/evaluator.h"
+#include "../core/parser/parser.h"
 #include <iostream>
 
 using namespace latex_solver;
@@ -35,7 +35,7 @@ void test_division_by_zero() {
 void test_invalid_syntax() {
     TEST("Invalid syntax error handling");
     try {
-        Parser p("2 + + 3");
+        Parser p("2 + * 3");
         auto   expr = p.parse();
         std::cerr << "  FAILED: Should have thrown ParseError" << std::endl;
         throw std::runtime_error("Expected exception not thrown");
