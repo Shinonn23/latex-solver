@@ -140,7 +140,6 @@ int main() {
             break;
         }
 
-        // Trim whitespace
         size_t start = input.find_first_not_of(" \t");
         if (start == string::npos)
             continue;
@@ -149,7 +148,6 @@ int main() {
         if (input.empty())
             continue;
 
-        // Handle commands
         if (input == "exit" || input == "quit") {
             // cout << "Goodbye!\n";
             break;

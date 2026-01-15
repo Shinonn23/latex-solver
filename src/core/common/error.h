@@ -29,6 +29,12 @@ namespace latex_solver {
             : std::runtime_error("Parse error: " + message) {}
     };
 
+    class LexerError : public std::runtime_error {
+        public:
+        explicit LexerError(const std::string &message)
+            : std::runtime_error("Lexer error: " + message) {}
+    };
+
     class SolverError : public std::runtime_error {
         public:
         explicit SolverError(const std::string &message)

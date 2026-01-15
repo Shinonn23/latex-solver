@@ -1,4 +1,8 @@
 # Test executables
+add_executable(test_lexer test_lexer.cpp)
+target_include_directories(test_lexer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+add_test(NAME test_lexer COMMAND test_lexer)
+
 add_executable(test_arithmetic test_arithmetic.cpp)
 target_include_directories(test_arithmetic PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 add_test(NAME test_arithmetic COMMAND test_arithmetic)

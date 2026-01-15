@@ -8,6 +8,8 @@
 #include "../../core/ast/number.h"
 #include "../../core/ast/symbol.h"
 #include "../../core/common/error.h"
+#include "../../latex/lexer/lexer.h"
+#include "../../latex/lexer/token.h"
 #include <cctype>
 #include <memory>
 #include <string>
@@ -16,135 +18,136 @@ namespace latex_solver {
 
     class Parser {
         private:
-        std::string input_; // The input string to parse (e.g., "2 + 3 * 4")
-        size_t      pos_;   // Current position in the input string
+        Lexer       lexer_;
+        Token       current_token_;
 
-        char        current() const {
-            if (pos_ >= input_.size())
-                return '\0';
-            return input_[pos_];
-        }
-
-        void advance() { pos_++; }
-
-        void skip_whitespace() {
-            while (std::isspace(current())) {
-                advance();
+        // helpers functions
+        const char* token_type_name(TokenType type) const {
+            switch (type) {
+            case TokenType::End:
+                return "End";
+            case TokenType::Number:
+                return "Number";
+            case TokenType::Identifier:
+                return "Identifier";
+            case TokenType::Function:
+                return "Function";
+            case TokenType::Plus:
+                return "Plus";
+            case TokenType::Minus:
+                return "Minus";
+            case TokenType::Mul:
+                return "Mul";
+            case TokenType::Div:
+                return "Div";
+            case TokenType::Equal:
+                return "Equal";
+            case TokenType::LParen:
+                return "LParen";
+            case TokenType::RParen:
+                return "RParen";
+            case TokenType::LBrace:
+                return "LBrace";
+            case TokenType::RBrace:
+                return "RBrace";
+            default:
+                return "Unknown";
             }
         }
 
+        void advance() { current_token_ = lexer_.nextToken(); }
+
+        void expect(TokenType type, const std::string& msg) {
+            if (current_token_.type != type) {
+                throw ParseError(msg);
+            }
+            advance();
+        }
+
+        Token consume(TokenType type, const std::string& msg) {
+            if (current_token_.type != type) {
+                throw ParseError(msg);
+            }
+            Token tok = current_token_;
+            advance();
+            return tok;
+        }
+
+        // all parsing functions
         double parse_number() {
-            std::string num_str;
-            bool        has_dot = false;
-
-            while (std::isdigit(current()) || (current() == '.' && !has_dot)) {
-                if (current() == '.')
-                    has_dot = true;
-                num_str += current();
-                advance();
-            }
-
-            if (num_str.empty()) {
-                throw ParseError("Expected number");
-            }
-
-            return std::stod(num_str);
+            auto token = consume(TokenType::Number, "Expected number");
+            return token.number_value;
         }
 
         std::string parse_identifier() {
-            std::string id;
-            while (std::isalnum(current()) || current() == '_') {
-                id += current();
-                advance();
-            }
-            return id;
+            auto token = consume(TokenType::Identifier, "Expected identifier");
+            return token.lexeme;
         }
 
         ExprPtr parse_primary() {
-            skip_whitespace();
-
-            if (current() == '-') {
+            if (current_token_.type == TokenType::Function) {
+                std::string func_name = current_token_.lexeme;
                 advance();
-                auto expr = parse_primary();
+                expect(TokenType::LBrace, "Expected '{' after function name");
+                auto expr = parse_expression();
+                expect(TokenType::RBrace,
+                       "Expected '}' after function argument");
+                return std::make_unique<Function>(func_name, std::move(expr));
+            }
+
+            if (current_token_.type == TokenType::LParen) {
+                advance();
+                auto expr = parse_expression();
+                expect(TokenType::RParen, "Expected ')'");
+                return expr;
+            }
+
+            if (current_token_.type == TokenType::Number) {
+                return std::make_unique<Number>(parse_number());
+            }
+
+            if (current_token_.type == TokenType::Identifier) {
+                return std::make_unique<Symbol>(parse_identifier());
+            }
+
+            std::string error_msg = std::string("Unexpected token: ") +
+                                    token_type_name(current_token_.type);
+            if (!current_token_.lexeme.empty()) {
+                error_msg += " (" + current_token_.lexeme + ")";
+            }
+            throw ParseError(error_msg);
+        }
+
+        ExprPtr parse_unary() {
+            if (current_token_.type == TokenType::Minus) {
+                advance();
+                auto expr = parse_unary();
                 return std::make_unique<BinaryOp>(std::make_unique<Number>(0),
                                                   std::move(expr),
                                                   BinaryOpType::SUB);
             }
-
-            if (starts_with("\\sqrt")) {
-                pos_ += 5;
-                skip_whitespace();
-                if (current() != '{') {
-                    throw ParseError("Expected '{' after \\sqrt");
-                }
-                advance();
-                auto expr = parse_expression();
-                skip_whitespace();
-                if (current() != '}') {
-                    throw ParseError("Expected '}' after \\sqrt argument");
-                }
-                advance();
-                return std::make_unique<Function>("sqrt", std::move(expr));
-            }
-
-            if (current() == '(') {
-                advance();
-                auto expr = parse_expression();
-                skip_whitespace();
-                if (current() != ')') {
-                    throw ParseError("Expected ')'");
-                }
-                advance();
-                return expr;
-            }
-
-            if (std::isdigit(current())) {
-                return std::make_unique<Number>(parse_number());
-            }
-
-            if (std::isalpha(current())) {
-                return std::make_unique<Symbol>(parse_identifier());
-            }
-
-            throw ParseError("Unexpected character: " +
-                             std::string(1, current()));
-        }
-
-        bool starts_with(const std::string &str) const {
-            if (pos_ + str.length() > input_.size())
-                return false;
-            return input_.substr(pos_, str.length()) == str;
+            return parse_primary();
         }
 
         ExprPtr parse_multiplicative() {
-            auto left = parse_primary();
+            auto left = parse_unary();
 
             while (true) {
-                skip_whitespace();
-
                 BinaryOpType op_type;
                 bool         found_op = false;
 
-                if (starts_with("\\times")) {
-                    pos_ += 6; // length of "\times"
-                    op_type  = BinaryOpType::MUL;
-                    found_op = true;
-                } else if (starts_with("\\div")) {
-                    pos_ += 4; // length of "\div"
-                    op_type  = BinaryOpType::DIV;
-                    found_op = true;
-                } else if (current() == '*') {
+                if (current_token_.type == TokenType::Mul) {
                     advance();
                     op_type  = BinaryOpType::MUL;
                     found_op = true;
-                } else if (current() == '/') {
+                } else if (current_token_.type == TokenType::Div) {
                     advance();
                     op_type  = BinaryOpType::DIV;
                     found_op = true;
                 }
 
                 if (found_op) {
-                    auto right = parse_primary();
+                    auto right = parse_unary();
                     left       = std::make_unique<BinaryOp>(
                         std::move(left), std::move(right), op_type);
                 } else {
@@ -159,15 +162,15 @@ namespace latex_solver {
             auto left = parse_multiplicative();
 
             while (true) {
-                skip_whitespace();
-                char op = current();
-
-                if (op == '+' || op == '-') {
-                    advance();
-                    auto         right = parse_multiplicative();
+                if (current_token_.type == TokenType::Plus ||
+                    current_token_.type == TokenType::Minus) {
                     BinaryOpType op_type =
-                        (op == '+') ? BinaryOpType::ADD : BinaryOpType::SUB;
-                    left = std::make_unique<BinaryOp>(
+                        (current_token_.type == TokenType::Plus)
+                            ? BinaryOpType::ADD
+                            : BinaryOpType::SUB;
+                    advance();
+                    auto right = parse_multiplicative();
+                    left       = std::make_unique<BinaryOp>(
                         std::move(left), std::move(right), op_type);
                 } else {
                     break;
@@ -180,33 +183,20 @@ namespace latex_solver {
         ExprPtr parse_expression() { return parse_additive(); }
 
         public:
-        explicit Parser(const std::string &input) : input_(input), pos_(0) {}
+        explicit Parser(const std::string& input) : lexer_(input) {
+            current_token_ = lexer_.nextToken();
+        }
 
         ExprPtr parse() {
             auto expr = parse_expression();
-            skip_whitespace();
-            if (current() != '\0') {
-                throw ParseError("Unexpected characters after expression");
-            }
+            expect(TokenType::End, "Unexpected input after expression");
             return expr;
         }
 
         EquationPtr parse_equation() {
             auto left = parse_expression();
-            skip_whitespace();
-
-            if (current() != '=') {
-                throw ParseError("Expected '=' in equation");
-            }
-            advance();
-
+            expect(TokenType::Equal, "Expected '=' in equation");
             auto right = parse_expression();
-            skip_whitespace();
-
-            if (current() != '\0') {
-                throw ParseError("Unexpected characters after equation");
-            }
-
             return std::make_unique<Equation>(std::move(left),
                                               std::move(right));
         }
