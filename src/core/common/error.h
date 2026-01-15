@@ -1,6 +1,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#include "../../latex/lexer/token.h"
 #include <stdexcept>
 #include <string>
 
@@ -27,6 +28,23 @@ namespace latex_solver {
         public:
         explicit ParseError(const std::string &message)
             : std::runtime_error("Parse error: " + message) {}
+    };
+
+    class UnexpectedTokenError : public ParseError {
+        public:
+        UnexpectedTokenError(TokenType type, const std::string &lexeme)
+            : ParseError(build_message(type, lexeme)) {}
+
+        private:
+        static std::string build_message(TokenType          type,
+                                         const std::string &lexeme) {
+            std::string msg =
+                std::string("Unexpected token: ") + token_type_name(type);
+            if (!lexeme.empty()) {
+                msg += " (" + lexeme + ")";
+            }
+            return msg;
+        }
     };
 
     class LexerError : public std::runtime_error {

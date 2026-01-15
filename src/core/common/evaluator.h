@@ -58,6 +58,9 @@ namespace latex_solver {
                 }
                 result_ = left_val / right_val;
                 break;
+            case BinaryOpType::POW:
+                result_ = std::pow(left_val, right_val);
+                break;
             }
         }
 

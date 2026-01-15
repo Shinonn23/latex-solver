@@ -12,7 +12,8 @@ namespace latex_solver {
         ADD, // +
         SUB, // -
         MUL, // *
-        DIV  // /
+        DIV,  // /
+        POW   // ^
     };
 
     class BinaryOp : public Expr {
@@ -53,6 +54,9 @@ namespace latex_solver {
             case BinaryOpType::DIV:
                 op_str = "/";
                 break;
+            case BinaryOpType::POW:
+                op_str = "^";
+                break;
             }
             return "(" + left_->to_string() + " " + op_str + " " +
                    right_->to_string() + ")";
@@ -73,6 +77,8 @@ namespace latex_solver {
                 return "*";
             case BinaryOpType::DIV:
                 return "/";
+            case BinaryOpType::POW:
+                return "^";
             default:
                 return "?";
             }

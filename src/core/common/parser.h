@@ -18,46 +18,13 @@ namespace latex_solver {
 
     class Parser {
         private:
-        Lexer       lexer_;
-        Token       current_token_;
+        Lexer lexer_;
+        Token current_token_;
 
         // helpers functions
-        const char* token_type_name(TokenType type) const {
-            switch (type) {
-            case TokenType::End:
-                return "End";
-            case TokenType::Number:
-                return "Number";
-            case TokenType::Identifier:
-                return "Identifier";
-            case TokenType::Function:
-                return "Function";
-            case TokenType::Plus:
-                return "Plus";
-            case TokenType::Minus:
-                return "Minus";
-            case TokenType::Mul:
-                return "Mul";
-            case TokenType::Div:
-                return "Div";
-            case TokenType::Equal:
-                return "Equal";
-            case TokenType::LParen:
-                return "LParen";
-            case TokenType::RParen:
-                return "RParen";
-            case TokenType::LBrace:
-                return "LBrace";
-            case TokenType::RBrace:
-                return "RBrace";
-            default:
-                return "Unknown";
-            }
-        }
+        void  advance() { current_token_ = lexer_.nextToken(); }
 
-        void advance() { current_token_ = lexer_.nextToken(); }
-
-        void expect(TokenType type, const std::string& msg) {
+        void  expect(TokenType type, const std::string& msg) {
             if (current_token_.type != type) {
                 throw ParseError(msg);
             }
@@ -102,6 +69,13 @@ namespace latex_solver {
                 return expr;
             }
 
+            if (current_token_.type == TokenType::LBrace) {
+                advance();
+                auto expr = parse_expression();
+                expect(TokenType::RBrace, "Expected '}'");
+                return expr;
+            }
+
             if (current_token_.type == TokenType::Number) {
                 return std::make_unique<Number>(parse_number());
             }
@@ -110,12 +84,8 @@ namespace latex_solver {
                 return std::make_unique<Symbol>(parse_identifier());
             }
 
-            std::string error_msg = std::string("Unexpected token: ") +
-                                    token_type_name(current_token_.type);
-            if (!current_token_.lexeme.empty()) {
-                error_msg += " (" + current_token_.lexeme + ")";
-            }
-            throw ParseError(error_msg);
+            throw UnexpectedTokenError(current_token_.type,
+                                       current_token_.lexeme);
         }
 
         ExprPtr parse_unary() {
@@ -125,12 +95,28 @@ namespace latex_solver {
                 return std::make_unique<BinaryOp>(std::make_unique<Number>(0),
                                                   std::move(expr),
                                                   BinaryOpType::SUB);
+            } else if (current_token_.type == TokenType::Plus) {
+                advance();
+                return parse_unary();
             }
             return parse_primary();
         }
 
-        ExprPtr parse_multiplicative() {
+        ExprPtr parse_power() {
             auto left = parse_unary();
+
+            while (current_token_.type == TokenType::POW) {
+                advance();
+                auto right = parse_unary();
+                left       = std::make_unique<BinaryOp>(
+                    std::move(left), std::move(right), BinaryOpType::POW);
+            }
+
+            return left;
+        }
+
+        ExprPtr parse_multiplicative() {
+            auto left = parse_power();
 
             while (true) {
                 BinaryOpType op_type;
@@ -147,7 +133,7 @@ namespace latex_solver {
                 }
 
                 if (found_op) {
-                    auto right = parse_unary();
+                    auto right = parse_power();
                     left       = std::make_unique<BinaryOp>(
                         std::move(left), std::move(right), op_type);
                 } else {

@@ -1,7 +1,5 @@
-#include "core/ast/binary.h"
 #include "core/ast/equation.h"
 #include "core/ast/expr.h"
-#include "core/ast/number.h"
 #include "core/common/context.h"
 #include "core/common/evaluator.h"
 #include "core/common/parser.h"
@@ -9,7 +7,6 @@
 #include "core/solver/algebra/linear_solver.h"
 #include <iostream>
 #include <memory>
-#include <set>
 #include <string>
 
 using namespace std;
@@ -74,7 +71,7 @@ void handle_simplify_command(const string &input) {
         auto simplified = Simplifier::simplify(*expr);
         cout << "Simplified: " << simplified->to_string() << endl;
     } catch (const exception &e) {
-        cout << "Error: " << e.what() << endl;
+        cout << e.what() << endl;
     }
 }
 
@@ -96,7 +93,7 @@ void handle_solve_command(const string &input, Context &ctx) {
         double solution = LinearSolver::solve(*equation, ctx);
         cout << "Solution: " << solution << endl;
     } catch (const exception &e) {
-        cout << "Error: " << e.what() << endl;
+        cout << e.what() << endl;
     }
 }
 
@@ -112,7 +109,7 @@ void handle_expression(const string &input, Context &ctx) {
 
         cout << "Result: " << result << endl;
     } catch (const exception &e) {
-        cout << "Error: " << e.what() << endl;
+        cout << e.what() << endl;
     }
 }
 

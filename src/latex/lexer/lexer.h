@@ -67,9 +67,7 @@ namespace latex_solver {
                 }
 
                 // Functions
-                if (func_ == "sqrt" || func_ == "sin" || func_ == "cos" ||
-                    func_ == "tan" || func_ == "ln" || func_ == "log" ||
-                    func_ == "exp" || func_ == "abs") {
+                if (func_ == "sqrt") {
                     return Token{TokenType::Function, func_, 0};
                 }
 
@@ -100,6 +98,9 @@ namespace latex_solver {
             case '/':
                 advance();
                 return Token{TokenType::Div, "", 0};
+            case '^':
+                advance();
+                return Token{TokenType::POW, "", 0};
             case '(':
                 advance();
                 return Token{TokenType::LParen, "", 0};
