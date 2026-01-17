@@ -3,9 +3,6 @@
 #include "core/common/context.h"
 #include "core/eval/evaluator.h"
 #include "core/parser/parser.h"
-#include "core/rewrite/passes/simplify.h"
-#include "core/solver/algebra/linear_solver.h"
-#include "core/solver/algebra/quadratic_solver.h"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -15,20 +12,27 @@ using namespace latex_solver;
 
 void print_help() {
     cout << "\n=== LaTeX Solver - Basic Calculator ===\n";
-    cout << "Commands:\n";
+    cout << "Console commands:\n";
     cout << "  <expression>       - Evaluate expression\n";
-    cout << "  simplify <expr>    - Simplify expression\n";
-    cout << "  solve <equation>   - Solve equation\n";
     cout << "  set <var> <value>  - Set variable value\n";
     cout << "  vars               - Show all variables\n";
     cout << "  clear              - Clear all variables\n";
     cout << "  help               - Show this help\n";
     cout << "  exit               - Exit program\n";
+    cout << "\n";
+}
+
+void print_usage(const char *program_name) {
+    cout << "Flags commands:\n";
+    cout << "Usage: " << program_name << " [OPTIONS]\n";
+    cout << "  --help, -h              Show this help message\n";
+    cout << "  --version, -v           Show version information\n";
+    cout << "  --eval <expr>           Evaluate expression and exit\n";
+    cout << "  --set <var> --value <n> Set variable value\n";
 }
 
 void handle_set_command(const string &input, Context &ctx) {
-    // Parse: set <var> <value>
-    size_t pos = 3; // skip "set"
+    size_t pos = 3;
     while (pos < input.size() && isspace(input[pos]))
         pos++;
 
@@ -47,71 +51,6 @@ void handle_set_command(const string &input, Context &ctx) {
         cout << "Set " << var_name << " = " << value << endl;
     } catch (...) {
         cout << "Error: Invalid value. Usage: set <variable> <number>\n";
-    }
-}
-
-void handle_simplify_command(const string &input) {
-    // Parse: simplify <expression>
-    size_t pos = 8; // skip "simplify"
-
-    // etc input = "simplify   2 + 0 "
-    // input.size() = 17
-    while (pos < input.size() && isspace(input[pos]))
-        pos++;
-
-    // Now pos points to the start of the expression
-    // etc input.substr(11) = "2 + 0 "
-    string expr_str = input.substr(pos);
-
-    try {
-        Parser parser(expr_str);
-        auto   expr = parser.parse();
-
-        cout << "Original: " << expr->to_string() << endl;
-
-        auto simplified = Simplifier::simplify(*expr);
-        cout << "Simplified: " << simplified->to_string() << endl;
-    } catch (const exception &e) {
-        cout << e.what() << endl;
-    }
-}
-
-void handle_solve_command(const string &input, Context &ctx) {
-    // Parse: solve <equation>
-    size_t pos = 5; // skip "solve"
-    while (pos < input.size() && isspace(input[pos]))
-        pos++;
-
-    string equation_str = input.substr(pos);
-
-    try {
-        Parser parser(equation_str);
-        auto   equation = parser.parse_equation();
-
-        cout << "Equation: " << equation->to_string() << endl;
-
-        // Try quadratic solver first
-        try {
-            auto solutions = QuadraticSolver::solve(*equation, ctx);
-            if (solutions.size() == 1) {
-                cout << "Solution: " << solutions[0] << endl;
-            } else if (solutions.size() == 2) {
-                cout << "Solutions: " << solutions[0] << ", " << solutions[1]
-                     << endl;
-            }
-        } catch (const exception &e) {
-            string error_msg = e.what();
-            // If not quadratic, try linear solver
-            if (error_msg.find("Not a quadratic equation") != string::npos) {
-                double solution = LinearSolver::solve(*equation, ctx);
-                cout << "Solution: " << solution << endl;
-            } else {
-                // Re-throw other errors
-                throw;
-            }
-        }
-    } catch (const exception &e) {
-        cout << e.what() << endl;
     }
 }
 
@@ -142,8 +81,63 @@ void show_variables(const Context &ctx) {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     Context ctx;
+
+    // Handle command-line arguments
+    if (argc > 1) {
+        bool   has_eval = false;
+        string eval_expr;
+
+        for (int i = 1; i < argc; ++i) {
+            string arg = argv[i];
+
+            if (arg == "--help" || arg == "-h") {
+                print_help();
+                print_usage(argv[0]);
+                return 0;
+            } else if (arg == "--version" || arg == "-v") {
+                cout << "LaTeX Solver v1.0\n";
+                return 0;
+            } else if (arg == "--set" && i + 1 < argc) {
+                string var_name = argv[++i];
+                if (i + 1 < argc && string(argv[i + 1]) == "--value" &&
+                    i + 2 < argc) {
+                    ++i; // skip --value
+                    string value_str = argv[++i];
+                    try {
+                        double value = stod(value_str);
+                        ctx.set(var_name, value);
+                        cout << "Set " << var_name << " = " << value << endl;
+                    } catch (...) {
+                        cout << "Error: Invalid value for " << var_name << "\n";
+                        return 1;
+                    }
+                } else {
+                    cout << "Error: --set requires --value <number>\n";
+                    print_usage(argv[0]);
+                    return 1;
+                }
+            } else if (arg == "--eval" && i + 1 < argc) {
+                eval_expr = argv[++i];
+                has_eval  = true;
+            } else {
+                cout << "Unknown option: " << arg << "\n";
+                print_usage(argv[0]);
+                return 1;
+            }
+        }
+
+        if (has_eval) {
+            handle_expression(eval_expr, ctx);
+            return 0;
+        }
+
+        // If only variables were set, show them and exit
+        if (argc > 1) {
+            return 0;
+        }
+    }
 
     cout << "LaTeX Solver v1.0 - Basic Calculator\n";
     cout << "Type 'help' for commands, 'exit' to quit.\n";
@@ -164,7 +158,6 @@ int main() {
             continue;
 
         if (input == "exit" || input == "quit") {
-            // cout << "Goodbye!\n";
             break;
         } else if (input == "help") {
             print_help();
@@ -176,12 +169,6 @@ int main() {
         } else if (input.substr(0, 3) == "set" && input.size() > 3 &&
                    isspace(input[3])) {
             handle_set_command(input, ctx);
-        } else if (input.substr(0, 8) == "simplify" &&
-                   (input.size() == 8 || isspace(input[8]))) {
-            handle_simplify_command(input);
-        } else if (input.substr(0, 5) == "solve" &&
-                   (input.size() == 5 || isspace(input[5]))) {
-            handle_solve_command(input, ctx);
         } else {
             handle_expression(input, ctx);
         }

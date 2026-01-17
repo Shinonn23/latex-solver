@@ -29,9 +29,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_library(latex_core
     src/core/eval/evaluator.cpp
     src/core/parser/parser.cpp
-    src/core/solver/algebra/linear_solver.cpp
-    src/core/solver/algebra/quadratic_solver.cpp
-    src/core/rewrite/passes/simplify.cpp
 )
 
 target_include_directories(latex_core
